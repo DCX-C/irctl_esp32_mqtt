@@ -31,42 +31,62 @@ static const char ac_tcl_close[] = {
 0x01, 0x3f};
 
 static struct ac_tcl_basic g_ac_tcl = {
-    .cwt = 560,
-    .st0 = 3100,
-    .st1 = 1600,
-    .lg0 = 310,
-    .lg1 = 1100,
+    .cwt = 560,   //untrig
+    .st0 = 3100,  //trig
+    .st1 = 1600,  //untrig
+    .lg0 = 310,   //trig
+    .lg1 = 1100,  //trig
     .data_buf = (unsigned int)ac_tcl_open,
     .data_len = sizeof(ac_tcl_open),
+};
+
+#define M_ST_IDLE 0
+#define M_ST_BUSY 1
+#define M_ST_END  2
+
+#define M_STEP0 0
+#define M_STEP1 1
+#define M_STEP2 2
+struct machine{
+    int st;
+    int stp;
+    int bits;
 };
 
 static const char *TAG = "example";
 static bool IRAM_ATTR tim_cb(gptimer_handle_t timer, const gptimer_alarm_event_data_t *edata, void *user_data)
 {
-    static int st = 0;
-    static int next = 0;
+    static struct machine machine = {
+        .st  = M_ST_IDLE,
+        .stp = M_STEP0,
+        .bits = 0,
+    };
+
     struct ac_tcl_basic *ac_tcl = (struct ac_tcl_basic *)user_data;
     char *p8 =(char*) (ac_tcl->data_buf);
     
-
     gptimer_alarm_config_t alarm_config = {
         .reload_count = 0,
         .alarm_count = 1000000, // period = 1s
         .flags.auto_reload_on_alarm = true,
     };
 
-    switch (st)
+    switch (machine.st)
     {
-    case 0: //idle
-        if((next & 1) == 1) {
-            alarm_config.alarm_count = ac_tcl->st1;
-            st = 1;
-        } else {
+    case M_ST_IDLE: //idle
+        switch (machine.stp)
+        {
+        case M_STEP0:
             alarm_config.alarm_count = ac_tcl->st0;
-        }
-        ESP_ERROR_CHECK(gptimer_set_alarm_action(timer, &alarm_config));
-        next++;
         break;
+        case M_STEP1:
+            alarm_config.alarm_count = ac_tcl->st1;
+            st = M_ST_BUSY;
+        break;
+        default:
+        }
+    break;
+
     case 1: //busy
         if((next & 1) == 1) {
             if(p8[(next-2) /2 /8] & ((0x80>>(((next-2)/2)%8)))) {
@@ -80,38 +100,65 @@ static bool IRAM_ATTR tim_cb(gptimer_handle_t timer, const gptimer_alarm_event_d
         } else {
             alarm_config.alarm_count = ac_tcl->cwt;
         }
-        ESP_ERROR_CHECK(gptimer_set_alarm_action(timer, &alarm_config));
-        next++;
-        break;
-    case 2: //end
-        if((next & 1) == 1) {
-            st = 0;
-            next = 0;
-        } else {
+        switch (machine.stp)
+        {
+        case M_STEP0:
             alarm_config.alarm_count = ac_tcl->cwt;
-            ESP_ERROR_CHECK(gptimer_set_alarm_action(timer, &alarm_config));
-            next++;
+        break;
+        case M_STEP1:
+            alarm_config.alarm_count = ac_tcl->st1;
+            if (ac_tcl->data_buf[machine.bits/8] & (0x80>>(machine.bits%8))) {
+                alarm_config.alarm_count = ac_tcl->lg1;
+            } else {
+                alarm_config.alarm_count = ac_tcl->lg0;
+            }
+            machine.bits++;
+            if (machine.bits == (ac_tcl->data_len)*8) {
+                machine.st = M_ST_END;
+                machine.bits = 0;
+            }
+        break;
+        default:
+            ;
         }
+    break;
+    case 2: //end
+        case M_STEP0:
+            alarm_config.alarm_count = ac_tcl->cwt;
         break;
+        case M_STEP1:
+            machine.st = M_ST_IDLE;
+            g_isdone = 1;
+        break;
+        default:
+            ;
+    break;
     default:
-        break;
+    break;
     }
-    // gptimer_enable(timer);
+
+    
+
     if(next & 1){
         ir_cwave_on();
     } else {
         ir_cwave_off();
     }
-    if(next == 0) {
+
+    if (machine.act == M_STEP0) {
+        machine.act = M_STEP1;
+    } else if(machine.act == M_STEP1) {
+        machine.act = M_STEP0;
+    }
+
+    if (g_isdone) {
         gptimer_stop(timer);
         gptimer_disable(timer);
-        gptimer_del_timer(timer);
         ledc_stop(LEDC_LOW_SPEED_MODE, LEDC_CHANNEL_0, 0);
-        g_isdone = 1;
-        // ledc_timer_config(&ledc_timer);
-        // gpio_set_level(0, 0);
-    } 
-        // printf( "st :%d\r\n", st );
+    } else {
+        ESP_ERROR_CHECK(gptimer_set_alarm_action(timer, &alarm_config));
+    }
+    
     return pdTRUE;
 }
 
