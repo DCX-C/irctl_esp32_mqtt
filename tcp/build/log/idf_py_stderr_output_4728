@@ -1,0 +1,21 @@
+CMake Error at E:/MY_LEARNING/ESP_IDF/tools/cmake/component.cmake:479 (add_library):
+  Cannot find source file:
+
+    E:/MY_LEARNING/ESP_IDF/components/mqtt/mqtt_client.c
+
+  Tried extensions .c .C .c++ .cc .cpp .cxx .cu .mpp .m .M .mm .ixx .cppm .h
+  .hh .h++ .hm .hpp .hxx .in .txx .f .F .for .f77 .f90 .f95 .f03 .hip .ispc
+Call Stack (most recent call first):
+  E:/MY_LEARNING/ESP_IDF/components/mqtt/esp-mqtt/CMakeLists.txt:8 (idf_component_register)
+  E:/MY_LEARNING/ESP_IDF/components/mqtt/CMakeLists.txt:5 (include)
+
+
+CMake Error at E:/MY_LEARNING/ESP_IDF/tools/cmake/component.cmake:479 (add_library):
+  No SOURCES given to target: __idf_mqtt
+Call Stack (most recent call first):
+  E:/MY_LEARNING/ESP_IDF/components/mqtt/esp-mqtt/CMakeLists.txt:8 (idf_component_register)
+  E:/MY_LEARNING/ESP_IDF/components/mqtt/CMakeLists.txt:5 (include)
+
+
+CMake Generate step failed.  Build files cannot be regenerated correctly.
+ninja: error: rebuilding 'build.ninja': subcommand failed

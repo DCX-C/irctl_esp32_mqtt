@@ -1,0 +1,15 @@
+{
+    "files.associations": {
+        "stdio.h": "c",
+        "inttypes.h": "c",
+        "stdint.h": "c",
+        "param.h": "c",
+        "ir_encoder.h": "c"
+    },
+    "idf.adapterTargetName": "esp32c2",
+    "idf.portWin": "COM15",
+    "idf.flashType": "UART",
+    "idf.openOcdConfigs": [
+        "board/esp32c2-bridge.cfg"
+    ]
+}

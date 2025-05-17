@@ -1,0 +1,9 @@
+{
+  "C_Cpp.intelliSenseEngine": "default",
+  "idf.adapterTargetName": "esp32c2",
+  "idf.openOcdConfigs": [
+    "board/esp32c2-bridge.cfg"
+  ],
+  "idf.portWin": "COM7",
+  "idf.flashType": "UART"
+}

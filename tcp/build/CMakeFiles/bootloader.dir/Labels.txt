@@ -1,0 +1,13 @@
+# Target labels
+ bootloader
+# Source files and their labels
+E:/MY_LEARNING/esp_prj/mqtt_tcp/tcp/build/CMakeFiles/bootloader
+E:/MY_LEARNING/esp_prj/mqtt_tcp/tcp/build/CMakeFiles/bootloader.rule
+E:/MY_LEARNING/esp_prj/mqtt_tcp/tcp/build/CMakeFiles/bootloader-complete.rule
+E:/MY_LEARNING/esp_prj/mqtt_tcp/tcp/build/bootloader-prefix/src/bootloader-stamp/bootloader-build.rule
+E:/MY_LEARNING/esp_prj/mqtt_tcp/tcp/build/bootloader-prefix/src/bootloader-stamp/bootloader-configure.rule
+E:/MY_LEARNING/esp_prj/mqtt_tcp/tcp/build/bootloader-prefix/src/bootloader-stamp/bootloader-download.rule
+E:/MY_LEARNING/esp_prj/mqtt_tcp/tcp/build/bootloader-prefix/src/bootloader-stamp/bootloader-install.rule
+E:/MY_LEARNING/esp_prj/mqtt_tcp/tcp/build/bootloader-prefix/src/bootloader-stamp/bootloader-mkdir.rule
+E:/MY_LEARNING/esp_prj/mqtt_tcp/tcp/build/bootloader-prefix/src/bootloader-stamp/bootloader-patch.rule
+E:/MY_LEARNING/esp_prj/mqtt_tcp/tcp/build/bootloader-prefix/src/bootloader-stamp/bootloader-update.rule
