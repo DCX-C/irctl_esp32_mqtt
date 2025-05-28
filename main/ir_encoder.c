@@ -17,27 +17,31 @@
 
 SemaphoreHandle_t xSemaphore;
 StaticSemaphore_t xMutexBuffer;
+gptimer_handle_t gptimer = NULL;
 volatile static int g_isdone;
 
-static const char ac_tcl_open[] = {
+static unsigned char ac_tcl_open[] = {
 0xc4, 0xd3, 0x64, 0x80, 
 0x00, 0x26, 0xc0, 0x20,
-0x02, 0x00, 0x00, 0x00,
+0x1e, 0x00, 0x00, 0x00,
 0x01, 0x02};
-static const char ac_tcl_close[] = {
+static unsigned char ac_tcl_close[] = {
 0xc4, 0xd3, 0x64, 0x80, 
 0x00, 0x04, 0xc0, 0x20, 
-0x02, 0x00, 0x00, 0x00,
+0x1e, 0x00, 0x00, 0x00,
 0x01, 0x3f};
 
-static struct ac_tcl_basic g_ac_tcl = {
+struct ac_tcl_basic g_ac_tcl = {
     .cwt = 560,   //untrig
     .st0 = 3100,  //trig
     .st1 = 1600,  //untrig
     .lg0 = 310,   //trig
     .lg1 = 1100,  //trig
-    .data_buf = (unsigned int)ac_tcl_open,
+    .data_buf = ac_tcl_open,
     .data_len = sizeof(ac_tcl_open),
+    .is_open  = 0,
+    .is_fixed = 0,
+    .temp     = 26,
 };
 
 #define M_ST_IDLE 0
@@ -53,7 +57,7 @@ struct machine{
     int bits;
 };
 
-static const char *TAG = "example";
+static const char *TAG = "ir_encoder";
 static bool IRAM_ATTR tim_cb(gptimer_handle_t timer, const gptimer_alarm_event_data_t *edata, void *user_data)
 {
     static struct machine machine = {
@@ -63,7 +67,6 @@ static bool IRAM_ATTR tim_cb(gptimer_handle_t timer, const gptimer_alarm_event_d
     };
 
     struct ac_tcl_basic *ac_tcl = (struct ac_tcl_basic *)user_data;
-    char *p8 =(char*) (ac_tcl->data_buf);
     
     gptimer_alarm_config_t alarm_config = {
         .reload_count = 0,
@@ -78,33 +81,22 @@ static bool IRAM_ATTR tim_cb(gptimer_handle_t timer, const gptimer_alarm_event_d
         {
         case M_STEP0:
             alarm_config.alarm_count = ac_tcl->st0;
-        break;
+            break;
         case M_STEP1:
             alarm_config.alarm_count = ac_tcl->st1;
-            st = M_ST_BUSY;
-        break;
+            machine.st = M_ST_BUSY;
+            break;
         default:
+            break;
         }
-    break;
+        break;
 
     case 1: //busy
-        if((next & 1) == 1) {
-            if(p8[(next-2) /2 /8] & ((0x80>>(((next-2)/2)%8)))) {
-                alarm_config.alarm_count = ac_tcl->lg1;
-            } else {
-                alarm_config.alarm_count = ac_tcl->lg0;
-            }
-            if((next-2) /2 == (ac_tcl->data_len)*8-1) {
-                st = 2;
-            }
-        } else {
-            alarm_config.alarm_count = ac_tcl->cwt;
-        }
         switch (machine.stp)
         {
         case M_STEP0:
             alarm_config.alarm_count = ac_tcl->cwt;
-        break;
+            break;
         case M_STEP1:
             alarm_config.alarm_count = ac_tcl->st1;
             if (ac_tcl->data_buf[machine.bits/8] & (0x80>>(machine.bits%8))) {
@@ -117,89 +109,47 @@ static bool IRAM_ATTR tim_cb(gptimer_handle_t timer, const gptimer_alarm_event_d
                 machine.st = M_ST_END;
                 machine.bits = 0;
             }
-        break;
+            break;
         default:
-            ;
+            break;
         }
-    break;
+        break;
     case 2: //end
+        switch (machine.stp)
+        {
         case M_STEP0:
             alarm_config.alarm_count = ac_tcl->cwt;
-        break;
+            break;
         case M_STEP1:
             machine.st = M_ST_IDLE;
             g_isdone = 1;
-        break;
+            break;
         default:
-            ;
-    break;
+            break;
+        }
+        break;
+
     default:
-    break;
+        break;
     }
 
-    
-
-    if(next & 1){
+    if (machine.stp == M_STEP0) {
         ir_cwave_on();
-    } else {
+        machine.stp = M_STEP1;
+    } else if(machine.stp == M_STEP1) {
         ir_cwave_off();
-    }
-
-    if (machine.act == M_STEP0) {
-        machine.act = M_STEP1;
-    } else if(machine.act == M_STEP1) {
-        machine.act = M_STEP0;
+        machine.stp = M_STEP0;
     }
 
     if (g_isdone) {
         gptimer_stop(timer);
-        gptimer_disable(timer);
-        ledc_stop(LEDC_LOW_SPEED_MODE, LEDC_CHANNEL_0, 0);
+        ledc_timer_pause(LEDC_LOW_SPEED_MODE, LEDC_TIMER_0);
+        // ledc_stop(LEDC_LOW_SPEED_MODE, LEDC_CHANNEL_0, 0);
     } else {
         ESP_ERROR_CHECK(gptimer_set_alarm_action(timer, &alarm_config));
     }
     
     return pdTRUE;
-}
-
-
-void ac_swi(int sw)
-{
-    xSemaphoreTake(xSemaphore, ULONG_MAX);
-    g_isdone = 0;
-    ir_io_init(0);
-    if(sw) {
-        g_ac_tcl.data_buf = (unsigned int)ac_tcl_open;
-    } else {
-        g_ac_tcl.data_buf = (unsigned int)ac_tcl_close;
-    }
-    gptimer_handle_t gptimer = NULL;
-    gptimer_config_t timer_config = {
-        .clk_src = GPTIMER_CLK_SRC_DEFAULT,
-        .direction = GPTIMER_COUNT_UP,
-        .resolution_hz = 1000000, // 1MHz, 1 tick=1us
-    };
-
-    ESP_ERROR_CHECK(gptimer_new_timer(&timer_config, &gptimer));
-
-    gptimer_event_callbacks_t cbs = {
-        .on_alarm = tim_cb,
-    };
-    ESP_ERROR_CHECK(gptimer_register_event_callbacks(gptimer, &cbs, &g_ac_tcl));
-
-    ESP_LOGI(TAG, "Enable timer");
-    ESP_ERROR_CHECK(gptimer_enable(gptimer));
-
-    ESP_LOGI(TAG, "Start timer, stop it at alarm event");
-    gptimer_alarm_config_t alarm_config = {
-        .reload_count = 0,
-        .alarm_count = 1000000, // period = 1s
-        .flags.auto_reload_on_alarm = true,
-    };
-    ESP_ERROR_CHECK(gptimer_set_alarm_action(gptimer, &alarm_config));
-    ESP_ERROR_CHECK(gptimer_start(gptimer));
-    while(!g_isdone);
-    xSemaphoreGive(xSemaphore);
 }
 
 void ir_io_init(unsigned int pin)
@@ -241,5 +191,102 @@ void ir_cwave_on()
 void ir_encoder_init()
 {
     xSemaphore = xSemaphoreCreateMutexStatic(&xMutexBuffer);
-    ir_io_init(0);
+    ir_io_init(5);
+
+    //gptiemr init
+    gptimer_config_t timer_config = {
+        .clk_src = GPTIMER_CLK_SRC_DEFAULT,
+        .direction = GPTIMER_COUNT_UP,
+        .resolution_hz = 1000000, // 1MHz, 1 tick=1us
+    };
+
+    ESP_ERROR_CHECK(gptimer_new_timer(&timer_config, &gptimer));
+    gptimer_event_callbacks_t cbs = {
+        .on_alarm = tim_cb,
+    };
+    ESP_ERROR_CHECK(gptimer_register_event_callbacks(gptimer, &cbs, &g_ac_tcl));
+
+    ESP_LOGI(TAG, "Enable timer");
+    ESP_ERROR_CHECK(gptimer_enable(gptimer));
+}
+
+
+unsigned char bits_reverse(unsigned char in)
+{
+    in = ((in&0xf0) >> 4) | ((in&0x0f) << 4);
+    in = ((in&0xcc) >> 2) | ((in&0x33) << 2);
+    in = ((in&0xaa) >> 1) | ((in&0x55) << 1);
+    return in;
+}
+
+void ac_swi(int sw)
+{
+    if (g_ac_tcl.is_fixed) {
+        return;
+    }
+
+    xSemaphoreTake(xSemaphore, ULONG_MAX);
+    g_isdone = 0;
+    
+    if(sw) {
+        g_ac_tcl.data_buf = (unsigned int)ac_tcl_open;
+    } else {
+        g_ac_tcl.data_buf = (unsigned int)ac_tcl_close;
+    }
+
+    gptimer_alarm_config_t alarm_config = {
+        .reload_count = 0,
+        .alarm_count = 1000000, // period = 1s
+        .flags.auto_reload_on_alarm = true,
+    };
+
+    ESP_ERROR_CHECK(gptimer_set_alarm_action(gptimer, &alarm_config));
+    ESP_ERROR_CHECK(gptimer_start(gptimer));
+    while(!g_isdone);
+    xSemaphoreGive(xSemaphore);
+    g_ac_tcl.is_open = sw;
+}
+
+int ac_fixed_tgl()
+{
+    g_ac_tcl.is_fixed = !g_ac_tcl.is_fixed;
+    return g_ac_tcl.is_fixed;
+}
+
+void ac_pre_t()
+{
+    ac_tcl_open[7]  = bits_reverse(31-g_ac_tcl.temp);
+    ac_tcl_open[13] = 0;
+    for(int i = 0;i<13;i++)
+    {
+        ac_tcl_open[13] += bits_reverse(ac_tcl_open[i]);
+    }
+    ac_tcl_open[13] = bits_reverse(ac_tcl_open[13]);
+}
+
+void ac_tup()
+{
+    if (g_ac_tcl.temp < 30) {
+        g_ac_tcl.temp++;
+    }
+    ac_pre_t();
+    ac_swi(1);
+}
+
+void ac_tdown()
+{
+    if (g_ac_tcl.temp > 16) {
+        g_ac_tcl.temp--;
+    }
+    ac_pre_t();
+    ac_swi(1);
+}
+
+int ac_get_temperature()
+{
+    return g_ac_tcl.temp;
+}
+
+int ac_is_open() {
+    return g_ac_tcl.is_open;
 }
