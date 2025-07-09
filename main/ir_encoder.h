@@ -7,9 +7,11 @@ void ac_swi(int sw);
 void ir_io_init(unsigned int pin);
 void ir_encoder_init();
 int ac_is_open();
+int ac_is_fixed();
 int ac_fixed_tgl();
 void ac_tup();
 void ac_tdown();
+void ac_set_temperature(int t);
 int ac_get_temperature();
 
 struct ac_tcl_basic{
@@ -22,7 +24,9 @@ struct ac_tcl_basic{
     unsigned int data_len;
     unsigned int is_open : 1,
                  is_fixed: 1,
-                 temp    :30;
+                 temp    : 6,
+                 pin     : 8,
+                 rev     : 16;
 };
 
 

@@ -1,4 +1,4 @@
-/* * Data converted from E:/MY_LEARNING/esp_prj/mqtt_tcp/build/esp-idf/mbedtls/x509_crt_bundle
+/* * Data converted from E:/MyEmbeding/esp_prj/mqtt_irctl/build/esp-idf/mbedtls/x509_crt_bundle
  */
 .data
 .section .rodata.embedded

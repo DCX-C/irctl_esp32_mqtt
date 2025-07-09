@@ -39,15 +39,42 @@
 
 volatile time_t gtick;
 
+#define GET_MINIUS(tm) (tm->tm_hour*60 + tm->tm_min)
+#define TO_MINUIS(h, m) (h*60 + m)
+#define V_CONSTRAINT(v, l, h) (v > l && v < h)
+#define V_OTHER(v, l, h) (v < l || v > h)
+
 void ac_accord_time(struct tm* tm)
 {
+    if (ac_is_fixed()) {
+        return;
+    }
+    
+    if(V_OTHER(GET_MINIUS(tm), TO_MINUIS(8,30), TO_MINUIS(23,30))) {
+        if (ac_get_temperature() != 27) {
+            ac_set_temperature(27);
+            if (ac_is_open()) {
+                ac_swi(1);
+            }
+        } 
+    } else {
+        if (V_CONSTRAINT(tm->tm_wday, 0, 6)) {
+            if (ac_get_temperature() != 25) {
+                ac_set_temperature(25);
+            } 
+            if (ac_is_open()) {
+                ac_swi(1);
+            }
+        }
+    }
+
     //周末常开
-    if(tm->tm_wday == 0 || tm->tm_wday == 6) {
-        if(!ac_is_open()) {
+    if (V_OTHER(tm->tm_wday, 1, 5)) {
+        if (!ac_is_open()) {
             ac_swi(1);
         }
     } else {
-        if((tm->tm_hour*60 + tm->tm_min > 8*60+30) && (tm->tm_hour*60 + tm->tm_min < 21*60+10)) {
+        if((GET_MINIUS(tm) > TO_MINUIS(8, 30)) && (GET_MINIUS(tm) < TO_MINUIS(21, 10))) {
             if(ac_is_open()) {
                 ac_swi(0);
             } 

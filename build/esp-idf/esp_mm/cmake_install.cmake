@@ -1,4 +1,4 @@
-# Install script for directory: E:/MY_LEARNING/ESP_IDF/components/esp_mm
+# Install script for directory: E:/MyEmbeding/ESP_IDF/components/esp_mm
 
 # Set the install prefix
 if(NOT DEFINED CMAKE_INSTALL_PREFIX)
@@ -34,6 +34,6 @@ endif()
 
 # Set default install directory permissions.
 if(NOT DEFINED CMAKE_OBJDUMP)
-  set(CMAKE_OBJDUMP "E:/Espressif/tools/riscv32-esp-elf/esp-13.2.0_20230928/riscv32-esp-elf/bin/riscv32-esp-elf-objdump.exe")
+  set(CMAKE_OBJDUMP "E:/MyEmbeding/ESP_IDF/tools/tools/riscv32-esp-elf/esp-13.2.0_20230928/riscv32-esp-elf/bin/riscv32-esp-elf-objdump.exe")
 endif()
 

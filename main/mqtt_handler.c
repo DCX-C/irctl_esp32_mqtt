@@ -139,16 +139,18 @@ int mqtt_data_event_handler(void *event_data)
             break;
         case 5:
             ac_tup();
+            ac_swi(1);
             sprintf(status_str,  "{\"T = %d\"}", ac_get_temperature());
             esp_mqtt_client_publish(client, "M2M/AC_PUB", status_str, 0, 0, 0);
             break;
         case 6:
             ac_tdown();
+            ac_swi(1);
             sprintf(status_str,  "{\"T = %d\"}", ac_get_temperature());
             esp_mqtt_client_publish(client, "M2M/AC_PUB", status_str, 0, 0, 0);
             break;
         case 7:
-            sprintf(status_str,  "{\"is_fixed\": %d}", ac_fixed_tgl());
+            sprintf(status_str,  "{\"is_locked\": %d}", ac_fixed_tgl());
             esp_mqtt_client_publish(client, "M2M/AC_PUB", status_str, 0, 0, 0);
             break;
         default:

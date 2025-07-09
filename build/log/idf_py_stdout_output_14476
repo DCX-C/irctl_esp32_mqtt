@@ -1,0 +1,49 @@
+-- Existing sdkconfig 'E:/MyEmbeding/esp_prj/mqtt_irctl/sdkconfig' renamed to 'E:/MyEmbeding/esp_prj/mqtt_irctl/sdkconfig.old'.
+-- Found Git: E:/MyEmbeding/ESP_IDF/tools/tools/idf-git/2.39.2/cmd/git.exe (found version "2.39.2.windows.1") 
+-- The C compiler identification is GNU 13.2.0
+-- The CXX compiler identification is GNU 13.2.0
+-- The ASM compiler identification is GNU
+-- Found assembler: E:/MyEmbeding/ESP_IDF/tools/tools/riscv32-esp-elf/esp-13.2.0_20230928/riscv32-esp-elf/bin/riscv32-esp-elf-gcc.exe
+-- Detecting C compiler ABI info
+-- Detecting C compiler ABI info - done
+-- Check for working C compiler: E:/MyEmbeding/ESP_IDF/tools/tools/riscv32-esp-elf/esp-13.2.0_20230928/riscv32-esp-elf/bin/riscv32-esp-elf-gcc.exe - skipped
+-- Detecting C compile features
+-- Detecting C compile features - done
+-- Detecting CXX compiler ABI info
+-- Detecting CXX compiler ABI info - done
+-- Check for working CXX compiler: E:/MyEmbeding/ESP_IDF/tools/tools/riscv32-esp-elf/esp-13.2.0_20230928/riscv32-esp-elf/bin/riscv32-esp-elf-g++.exe - skipped
+-- Detecting CXX compile features
+-- Detecting CXX compile features - done
+-- Building ESP-IDF components for target esp32c2
+NOTICE: Using component placed at E:\MyEmbeding\ESP_IDF\examples\common_components\protocol_examples_common for dependency "protocol_examples_common", specified in E:\MyEmbeding\esp_prj\mqtt_irctl\main\idf_component.yml
+NOTICE: Processing 2 dependencies:
+NOTICE: [1/2] protocol_examples_common (*) (E:\MyEmbeding\ESP_IDF\examples\common_components\protocol_examples_common)
+NOTICE: [2/2] idf (5.2.1)
+-- Project sdkconfig file E:/MyEmbeding/esp_prj/mqtt_irctl/sdkconfig
+-- Looking for sys/types.h
+-- Looking for sys/types.h - found
+-- Looking for stdint.h
+-- Looking for stdint.h - found
+-- Looking for stddef.h
+-- Looking for stddef.h - found
+-- Check size of time_t
+-- Check size of time_t - done
+-- Found Python3: e:/MyEmbeding/ESP_IDF/tools/python_env/idf5.2_py3.11_env/Scripts/python.exe (found version "3.11.2") found components: Interpreter 
+-- Performing Test C_COMPILER_SUPPORTS_WFORMAT_SIGNEDNESS
+-- Performing Test C_COMPILER_SUPPORTS_WFORMAT_SIGNEDNESS - Success
+-- App "mqtt_tcp" version: 7bad16c-dirty
+-- Adding linker script E:/MyEmbeding/esp_prj/mqtt_irctl/build/esp-idf/esp_system/ld/memory.ld
+-- Adding linker script E:/MyEmbeding/ESP_IDF/components/esp_system/ld/esp32c2/sections.ld.in
+-- Adding linker script E:/MyEmbeding/ESP_IDF/components/esp_rom/esp32c2/ld/esp32c2.rom.ld
+-- Adding linker script E:/MyEmbeding/ESP_IDF/components/esp_rom/esp32c2/ld/esp32c2.rom.api.ld
+-- Adding linker script E:/MyEmbeding/ESP_IDF/components/esp_rom/esp32c2/ld/esp32c2.rom.rvfp.ld
+-- Adding linker script E:/MyEmbeding/ESP_IDF/components/esp_rom/esp32c2/ld/esp32c2.rom.newlib.ld
+-- Adding linker script E:/MyEmbeding/ESP_IDF/components/esp_rom/esp32c2/ld/esp32c2.rom.version.ld
+-- Adding linker script E:/MyEmbeding/ESP_IDF/components/esp_rom/esp32c2/ld/esp32c2.rom.newlib-nano.ld
+-- Adding linker script E:/MyEmbeding/ESP_IDF/components/esp_rom/esp32c2/ld/esp32c2.rom.heap.ld
+-- Adding linker script E:/MyEmbeding/ESP_IDF/components/soc/esp32c2/ld/esp32c2.peripherals.ld
+-- Components: app_trace app_update bootloader bootloader_support bt cmock console cxx driver efuse esp-tls esp_adc esp_app_format esp_bootloader_format esp_coex esp_common esp_eth esp_event esp_gdbstub esp_hid esp_http_client esp_http_server esp_https_ota esp_https_server esp_hw_support esp_lcd esp_local_ctrl esp_mm esp_netif esp_netif_stack esp_partition esp_phy esp_pm esp_psram esp_ringbuf esp_rom esp_system esp_timer esp_wifi espcoredump esptool_py fatfs freertos hal heap http_parser idf_test ieee802154 json log lwip main mbedtls mqtt newlib nvs_flash nvs_sec_provider openthread partition_table protobuf-c protocol_examples_common protocomm pthread riscv sdmmc soc spi_flash spiffs tcp_transport ulp unity usb vfs wear_levelling wifi_provisioning wpa_supplicant
+-- Component paths: E:/MyEmbeding/ESP_IDF/components/app_trace E:/MyEmbeding/ESP_IDF/components/app_update E:/MyEmbeding/ESP_IDF/components/bootloader E:/MyEmbeding/ESP_IDF/components/bootloader_support E:/MyEmbeding/ESP_IDF/components/bt E:/MyEmbeding/ESP_IDF/components/cmock E:/MyEmbeding/ESP_IDF/components/console E:/MyEmbeding/ESP_IDF/components/cxx E:/MyEmbeding/ESP_IDF/components/driver E:/MyEmbeding/ESP_IDF/components/efuse E:/MyEmbeding/ESP_IDF/components/esp-tls E:/MyEmbeding/ESP_IDF/components/esp_adc E:/MyEmbeding/ESP_IDF/components/esp_app_format E:/MyEmbeding/ESP_IDF/components/esp_bootloader_format E:/MyEmbeding/ESP_IDF/components/esp_coex E:/MyEmbeding/ESP_IDF/components/esp_common E:/MyEmbeding/ESP_IDF/components/esp_eth E:/MyEmbeding/ESP_IDF/components/esp_event E:/MyEmbeding/ESP_IDF/components/esp_gdbstub E:/MyEmbeding/ESP_IDF/components/esp_hid E:/MyEmbeding/ESP_IDF/components/esp_http_client E:/MyEmbeding/ESP_IDF/components/esp_http_server E:/MyEmbeding/ESP_IDF/components/esp_https_ota E:/MyEmbeding/ESP_IDF/components/esp_https_server E:/MyEmbeding/ESP_IDF/components/esp_hw_support E:/MyEmbeding/ESP_IDF/components/esp_lcd E:/MyEmbeding/ESP_IDF/components/esp_local_ctrl E:/MyEmbeding/ESP_IDF/components/esp_mm E:/MyEmbeding/ESP_IDF/components/esp_netif E:/MyEmbeding/ESP_IDF/components/esp_netif_stack E:/MyEmbeding/ESP_IDF/components/esp_partition E:/MyEmbeding/ESP_IDF/components/esp_phy E:/MyEmbeding/ESP_IDF/components/esp_pm E:/MyEmbeding/ESP_IDF/components/esp_psram E:/MyEmbeding/ESP_IDF/components/esp_ringbuf E:/MyEmbeding/ESP_IDF/components/esp_rom E:/MyEmbeding/ESP_IDF/components/esp_system E:/MyEmbeding/ESP_IDF/components/esp_timer E:/MyEmbeding/ESP_IDF/components/esp_wifi E:/MyEmbeding/ESP_IDF/components/espcoredump E:/MyEmbeding/ESP_IDF/components/esptool_py E:/MyEmbeding/ESP_IDF/components/fatfs E:/MyEmbeding/ESP_IDF/components/freertos E:/MyEmbeding/ESP_IDF/components/hal E:/MyEmbeding/ESP_IDF/components/heap E:/MyEmbeding/ESP_IDF/components/http_parser E:/MyEmbeding/ESP_IDF/components/idf_test E:/MyEmbeding/ESP_IDF/components/ieee802154 E:/MyEmbeding/ESP_IDF/components/json E:/MyEmbeding/ESP_IDF/components/log E:/MyEmbeding/ESP_IDF/components/lwip E:/MyEmbeding/esp_prj/mqtt_irctl/main E:/MyEmbeding/ESP_IDF/components/mbedtls E:/MyEmbeding/ESP_IDF/components/mqtt E:/MyEmbeding/ESP_IDF/components/newlib E:/MyEmbeding/ESP_IDF/components/nvs_flash E:/MyEmbeding/ESP_IDF/components/nvs_sec_provider E:/MyEmbeding/ESP_IDF/components/openthread E:/MyEmbeding/ESP_IDF/components/partition_table E:/MyEmbeding/ESP_IDF/components/protobuf-c E:/MyEmbeding/ESP_IDF/examples/common_components/protocol_examples_common E:/MyEmbeding/ESP_IDF/components/protocomm E:/MyEmbeding/ESP_IDF/components/pthread E:/MyEmbeding/ESP_IDF/components/riscv E:/MyEmbeding/ESP_IDF/components/sdmmc E:/MyEmbeding/ESP_IDF/components/soc E:/MyEmbeding/ESP_IDF/components/spi_flash E:/MyEmbeding/ESP_IDF/components/spiffs E:/MyEmbeding/ESP_IDF/components/tcp_transport E:/MyEmbeding/ESP_IDF/components/ulp E:/MyEmbeding/ESP_IDF/components/unity E:/MyEmbeding/ESP_IDF/components/usb E:/MyEmbeding/ESP_IDF/components/vfs E:/MyEmbeding/ESP_IDF/components/wear_levelling E:/MyEmbeding/ESP_IDF/components/wifi_provisioning E:/MyEmbeding/ESP_IDF/components/wpa_supplicant
+-- Configuring done
+-- Generating done
+-- Build files have been written to: E:/MyEmbeding/esp_prj/mqtt_irctl/build

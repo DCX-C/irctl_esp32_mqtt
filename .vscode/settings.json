@@ -4,12 +4,26 @@
         "inttypes.h": "c",
         "stdint.h": "c",
         "param.h": "c",
-        "ir_encoder.h": "c"
+        "ir_encoder.h": "c",
+        "mqtt_handler.h": "c",
+        "lord.h": "c",
+        "ntp_prot.h": "c"
     },
     "idf.adapterTargetName": "esp32c2",
-    "idf.portWin": "COM15",
+    "idf.portWin": "COM8",
     "idf.flashType": "UART",
     "idf.openOcdConfigs": [
-        "board/esp32c2-bridge.cfg"
-    ]
+        "board/esp32c2-ftdi.cfg"
+    ],
+    "typescript.workspaceSymbols.excludeLibrarySymbols": true,
+    "C_Cpp.default.compilerPath": "",
+    "C_Cpp.default.includePath": [
+        "aaaaa"
+    ],
+    "idf.customExtraVars": {
+        "OPENOCD_SCRIPTS": "E:\\Espressif\\tools\\openocd-esp32\\v0.12.0-esp32-20230921/openocd-esp32/share/openocd/scripts",
+        "IDF_CCACHE_ENABLE": "1",
+        "ESP_ROM_ELF_DIR": "E:\\Espressif\\tools\\esp-rom-elfs\\20230320/",
+        "IDF_TARGET": "esp32c2"
+    }
 }

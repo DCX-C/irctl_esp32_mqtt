@@ -6,9 +6,11 @@
 #include "freertos/FreeRTOS.h"
 #include "freertos/semphr.h"
 
+
 #include "driver/gpio.h"
 #include "driver/ledc.h"
 #include "driver/gptimer.h"
+
 
 #include "esp_log.h"
 
@@ -22,9 +24,9 @@ volatile static int g_isdone;
 
 static unsigned char ac_tcl_open[] = {
 0xc4, 0xd3, 0x64, 0x80, 
-0x00, 0x26, 0xc0, 0x20,
+0x00, 0x26, 0xc0, 0xa0,
 0x1e, 0x00, 0x00, 0x00,
-0x01, 0x02};
+0x01, 0x9e};
 static unsigned char ac_tcl_close[] = {
 0xc4, 0xd3, 0x64, 0x80, 
 0x00, 0x04, 0xc0, 0x20, 
@@ -42,6 +44,7 @@ struct ac_tcl_basic g_ac_tcl = {
     .is_open  = 0,
     .is_fixed = 0,
     .temp     = 26,
+    .pin      = 5,
 };
 
 #define M_ST_IDLE 0
@@ -191,7 +194,7 @@ void ir_cwave_on()
 void ir_encoder_init()
 {
     xSemaphore = xSemaphoreCreateMutexStatic(&xMutexBuffer);
-    ir_io_init(5);
+    ir_io_init(g_ac_tcl.pin);
 
     //gptiemr init
     gptimer_config_t timer_config = {
@@ -221,18 +224,26 @@ unsigned char bits_reverse(unsigned char in)
 
 void ac_swi(int sw)
 {
-    if (g_ac_tcl.is_fixed) {
-        return;
-    }
-
     xSemaphoreTake(xSemaphore, ULONG_MAX);
     g_isdone = 0;
     
     if(sw) {
-        g_ac_tcl.data_buf = (unsigned int)ac_tcl_open;
+        g_ac_tcl.data_buf = (void *)ac_tcl_open;
     } else {
-        g_ac_tcl.data_buf = (unsigned int)ac_tcl_close;
+        g_ac_tcl.data_buf = (void *)ac_tcl_close;
     }
+
+    // Prepare and then apply the LEDC PWM channel configuration
+    ledc_channel_config_t ledc_channel = {
+        .speed_mode     = LEDC_LOW_SPEED_MODE,
+        .channel        = LEDC_CHANNEL_0,
+        .timer_sel      = LEDC_TIMER_0,
+        .intr_type      = LEDC_INTR_DISABLE,
+        .gpio_num       = g_ac_tcl.pin,
+        .duty           = 512, // Set duty to 0%
+        .hpoint         = 0
+    };
+    ESP_ERROR_CHECK(ledc_channel_config(&ledc_channel));    
 
     gptimer_alarm_config_t alarm_config = {
         .reload_count = 0,
@@ -245,6 +256,7 @@ void ac_swi(int sw)
     while(!g_isdone);
     xSemaphoreGive(xSemaphore);
     g_ac_tcl.is_open = sw;
+    gpio_set_direction(g_ac_tcl.pin, GPIO_MODE_DISABLE);
 }
 
 int ac_fixed_tgl()
@@ -270,7 +282,6 @@ void ac_tup()
         g_ac_tcl.temp++;
     }
     ac_pre_t();
-    ac_swi(1);
 }
 
 void ac_tdown()
@@ -279,7 +290,12 @@ void ac_tdown()
         g_ac_tcl.temp--;
     }
     ac_pre_t();
-    ac_swi(1);
+}
+
+void ac_set_temperature(int t)
+{
+    g_ac_tcl.temp = t;
+    ac_pre_t();
 }
 
 int ac_get_temperature()
@@ -289,4 +305,9 @@ int ac_get_temperature()
 
 int ac_is_open() {
     return g_ac_tcl.is_open;
+}
+
+int ac_is_fixed()
+{
+    return g_ac_tcl.is_fixed;
 }

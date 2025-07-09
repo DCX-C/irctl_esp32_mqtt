@@ -4,6 +4,6 @@
 
 method=source_dir
 command=
-source_dir=E:/MY_LEARNING/ESP_IDF/components/bootloader/subproject
+source_dir=E:/MyEmbeding/ESP_IDF/components/bootloader/subproject
 work_dir=
 

@@ -4,19 +4,19 @@
 cmake_minimum_required(VERSION 3.5)
 
 file(MAKE_DIRECTORY
-  "E:/MY_LEARNING/ESP_IDF/components/bootloader/subproject"
-  "E:/MY_LEARNING/esp_prj/mqtt_tcp/build/bootloader"
-  "E:/MY_LEARNING/esp_prj/mqtt_tcp/build/bootloader-prefix"
-  "E:/MY_LEARNING/esp_prj/mqtt_tcp/build/bootloader-prefix/tmp"
-  "E:/MY_LEARNING/esp_prj/mqtt_tcp/build/bootloader-prefix/src/bootloader-stamp"
-  "E:/MY_LEARNING/esp_prj/mqtt_tcp/build/bootloader-prefix/src"
-  "E:/MY_LEARNING/esp_prj/mqtt_tcp/build/bootloader-prefix/src/bootloader-stamp"
+  "E:/MyEmbeding/ESP_IDF/components/bootloader/subproject"
+  "E:/MyEmbeding/esp_prj/mqtt_irctl/build/bootloader"
+  "E:/MyEmbeding/esp_prj/mqtt_irctl/build/bootloader-prefix"
+  "E:/MyEmbeding/esp_prj/mqtt_irctl/build/bootloader-prefix/tmp"
+  "E:/MyEmbeding/esp_prj/mqtt_irctl/build/bootloader-prefix/src/bootloader-stamp"
+  "E:/MyEmbeding/esp_prj/mqtt_irctl/build/bootloader-prefix/src"
+  "E:/MyEmbeding/esp_prj/mqtt_irctl/build/bootloader-prefix/src/bootloader-stamp"
 )
 
 set(configSubDirs )
 foreach(subDir IN LISTS configSubDirs)
-    file(MAKE_DIRECTORY "E:/MY_LEARNING/esp_prj/mqtt_tcp/build/bootloader-prefix/src/bootloader-stamp/${subDir}")
+    file(MAKE_DIRECTORY "E:/MyEmbeding/esp_prj/mqtt_irctl/build/bootloader-prefix/src/bootloader-stamp/${subDir}")
 endforeach()
 if(cfgdir)
-  file(MAKE_DIRECTORY "E:/MY_LEARNING/esp_prj/mqtt_tcp/build/bootloader-prefix/src/bootloader-stamp${cfgdir}") # cfgdir has leading slash
+  file(MAKE_DIRECTORY "E:/MyEmbeding/esp_prj/mqtt_irctl/build/bootloader-prefix/src/bootloader-stamp${cfgdir}") # cfgdir has leading slash
 endif()
