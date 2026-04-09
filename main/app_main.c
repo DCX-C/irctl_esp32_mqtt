@@ -112,10 +112,11 @@ void app_main(void)
      * examples/protocols/README.md for more information about this function.
      */
     ESP_ERROR_CHECK(example_connect());
-    ir_encoder_init();
+    extern void gree_ac_register(int pid);
+    gree_ac_register(AC_PID_GREE);
     mqtt_app_start();
 
-    
-extern void easy_sw_timer();
-    xTaskCreate(easy_sw_timer, "EASY_TIMER", 8*1024, NULL, 10, NULL);
+    extern void soft_timer_init();
+    soft_timer_init();    
+
 }

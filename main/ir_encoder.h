@@ -1,34 +1,41 @@
 #ifndef _IR_ENCODER_C_
 #define _IR_ENCODER_C_
 
-void ir_cwave_off();
-void ir_cwave_on();
-void ac_swi(int sw);
-void ir_io_init(unsigned int pin);
-void ir_encoder_init();
-int ac_is_open();
-int ac_is_fixed();
-int ac_fixed_tgl();
-void ac_tup();
-void ac_tdown();
-void ac_set_temperature(int t);
-int ac_get_temperature();
 
-struct ac_tcl_basic{
-    unsigned int st0;
-    unsigned int st1;
-    unsigned int cwt;
-    unsigned int lg0;
-    unsigned int lg1;
-    unsigned char *data_buf;
-    unsigned int data_len;
-    unsigned int is_open : 1,
-                 is_fixed: 1,
-                 temp    : 6,
-                 pin     : 8,
-                 rev     : 16;
+#define AC_ID_USED AC_PID_GREE
+
+enum AC_PIDS{
+    AC_PID_TCL,
+    AC_PID_GREE,
+    ACDEV_MAX,
 };
 
+struct ac_cfg {
+    uint8_t open;
+    uint8_t temp_act;
+    uint8_t temp_slp;
+    uint8_t temp;
+    uint8_t sleep;
+};
+
+struct ac_dev {
+    struct ac_cfg cfg;
+    struct ac_ops *ops;
+    SemaphoreHandle_t mutex;
+};
+
+struct ac_ops {
+    void (*open)(struct ac_dev *ac);
+    void (*close)(struct ac_dev *ac);
+    void (*read_cfg)(struct ac_dev *ac, struct ac_cfg *cfg);
+    int  (*write_cfg)(struct ac_dev *ac, struct ac_cfg *cfg);
+};
+
+
+void ac_open(int devid);
+void ac_close(int devid);
+void ac_read_cfg(int devid, struct ac_cfg *cfg);
+void ac_write_cfg(int devid, struct ac_cfg *cfg);
 
 
 

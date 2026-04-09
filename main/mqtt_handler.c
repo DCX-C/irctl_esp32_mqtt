@@ -24,6 +24,9 @@
 #include "cJSON.h"
 
 #include "ir_encoder.h"
+#include "soft_timer.h"
+
+
 
 static const char *TAG = "mqtt_handler";
 #define DEVICE_ID "664786226bc31504f06ac4b3_A111"
@@ -64,34 +67,25 @@ const char cmdtbl[][16] = {
     "\"get_time\"",     //2
     "\"get_status\"",   //3
     "\"tgl_status\"",   //4
-    "\"tup\"",           //5
-    "\"tdown\"",         //6
-    "\"fixed\"",        //7
+    "\"tup\"",          //5
+    "\"tdown\"",        //6
+    "\"soft_sus\"",     //7
+    "\"soft_res\"",     //8
 };
 
-int mqtt_data_event_handler(void *event_data)
+int json_parse(void *data)
 {
-    extern time_t gtick;
-    esp_mqtt_event_handle_t event = event_data;
-    esp_mqtt_client_handle_t client = event->client;
-    char topic[196];
-    char request_id[64];
-    char chartime[60];
-    char status_str[32];
-    int msg_id = 0;
-    int cmd_code = -1;
-    char *cmd_str = NULL;
-    double number = 0; 
     cJSON *tree;
     cJSON *cmd;
     cJSON *cjval;
     cJSON *paras;
     cJSON *item;
+    char *cmd_str = NULL;
     
-    tree = cJSON_Parse(event->data);
+    tree = cJSON_Parse(data);
     cmd = cJSON_GetObjectItem(tree, "cmd");
     cjval = cJSON_GetObjectItem(tree, "val");
-    
+
     //非JSON包直接退出
     if (!cmd) {
         goto hdl_free;
@@ -99,29 +93,48 @@ int mqtt_data_event_handler(void *event_data)
 
     cmd_str = cJSON_Print(cmd);
     printf("cmd recv: %s\n", cmd_str);
-
     //确认命令
     for(int i = 0;i<sizeof(cmdtbl)/sizeof(cmdtbl[0]);i++)
     {
-        if(strncmp(cmdtbl[i], cmd_str, strlen(cmd_str))) {
-            cmd_code = -1;
-            continue;
-        } else {
-            cmd_code = i;
-            break;
+        if(0 == strncmp(cmdtbl[i], cmd_str, strlen(cmd_str))) {
+            return i;
         }
     }
-    printf("cmd ack: %d\n", cmd_code);
+hdl_free:
+    if(tree) {
+        cJSON_Delete(tree);
+    }
+    if(cmd_str) {
+        free(cmd_str);
+    }
+    return -1;
+}
 
+int mqtt_data_event_handler(void *event_data)
+{
+    extern time_t gtick;
+    esp_mqtt_event_handle_t event = event_data;
+    esp_mqtt_client_handle_t client = event->client;
+    struct ac_cfg cur_cfg;
+    char topic[196];
+    char request_id[64];
+    char chartime[60];
+    char status_str[32];
+    int msg_id = 0;
+    int cmd_code = -1;
+    
+
+    cmd_code = json_parse(event->data);
+    ac_read_cfg(AC_ID_USED, &cur_cfg);
     //执行命令
     switch (cmd_code)
     {
         case 0:
-            ac_swi(1);
+            ac_open(AC_ID_USED);
             esp_mqtt_client_publish(client, "M2M/AC_PUB", "{\"OPEN ACK\"}", 0, 0, 0);
             break;
         case 1:
-            ac_swi(0);
+            ac_close(AC_ID_USED);
             esp_mqtt_client_publish(client, "M2M/AC_PUB", "{\"CLOSE ACK\"}", 0, 0, 0);
             break;
         case 2:
@@ -129,35 +142,55 @@ int mqtt_data_event_handler(void *event_data)
             esp_mqtt_client_publish(client, "M2M/AC_PUB", chartime, 0, 0, 0);
             break;
         case 3:
-            sprintf(status_str,  "{\"isopen\": %d}", ac_is_open());
+            sprintf(status_str,  "{\"%s, t = %d\"}", cur_cfg.open ? "open" : "close", cur_cfg.temp);
             esp_mqtt_client_publish(client, "M2M/AC_PUB", status_str, 0, 0, 0);
             break;
         case 4:
-            ac_swi(!ac_is_open());
-            sprintf(status_str,  "{\"isopen\": %d}", ac_is_open());
+            cur_cfg.open = !cur_cfg.open;
+            ac_write_cfg(AC_ID_USED, &cur_cfg);
+            sprintf(status_str,  "{\"%s\"}", cur_cfg.open ? "open" : "close");
             esp_mqtt_client_publish(client, "M2M/AC_PUB", status_str, 0, 0, 0);
             break;
         case 5:
-            ac_tup();
-            ac_swi(1);
-            sprintf(status_str,  "{\"T = %d\"}", ac_get_temperature());
+            if (time_in_sleep()) {
+                cur_cfg.temp_slp++;
+                cur_cfg.temp = cur_cfg.temp_slp;
+            } else {
+                cur_cfg.temp_act++;
+                cur_cfg.temp = cur_cfg.temp_act;
+            }  
+                
+            ac_write_cfg(AC_ID_USED, &cur_cfg);
+            sprintf(status_str,  "{\"T = %d\"}", cur_cfg.temp);
             esp_mqtt_client_publish(client, "M2M/AC_PUB", status_str, 0, 0, 0);
             break;
         case 6:
-            ac_tdown();
-            ac_swi(1);
-            sprintf(status_str,  "{\"T = %d\"}", ac_get_temperature());
+            if (time_in_sleep()) {
+                cur_cfg.temp_slp--;
+                cur_cfg.temp = cur_cfg.temp_slp;
+            } else {
+                cur_cfg.temp_act--;
+                cur_cfg.temp = cur_cfg.temp_act;
+            }  
+            ac_write_cfg(AC_ID_USED, &cur_cfg);
+            sprintf(status_str,  "{\"T = %d\"}", cur_cfg.temp);
             esp_mqtt_client_publish(client, "M2M/AC_PUB", status_str, 0, 0, 0);
             break;
         case 7:
-            sprintf(status_str,  "{\"is_locked\": %d}", ac_fixed_tgl());
+            soft_timer_suspend();
+            sprintf(status_str,  "{\"suspned\"}");
             esp_mqtt_client_publish(client, "M2M/AC_PUB", status_str, 0, 0, 0);
             break;
+        case 8:
+            soft_timer_resume();
+            sprintf(status_str,  "{\"resume\"}");
+            esp_mqtt_client_publish(client, "M2M/AC_PUB", status_str, 0, 0, 0);
         default:
             esp_mqtt_client_publish(client, "$oc/devices/DEVICE_ID/user/app", "{\"UNDEFINE\"}", 0, 0, 0);
             break;
     }
     
+    printf("cur t= %d, %s", cur_cfg.temp, cur_cfg.open ? "open" : "close");
     printf("TOPIC=%.*s\r\n", event->topic_len, event->topic);
     printf("DATA=%.*s\r\n", event->data_len, event->data);
     
@@ -165,14 +198,6 @@ int mqtt_data_event_handler(void *event_data)
     if(request_id[0] != 0) {
         sprintf(topic, "$oc/devices/"DEVICE_ID"/sys/commands/response/request_id=%s", request_id);
         msg_id = esp_mqtt_client_publish(client, topic, "{\"result_code\": 0}", 0, 0, 0);
-    }
-
-hdl_free:
-    if(tree) {
-        cJSON_Delete(tree);
-    }
-    if(cmd_str) {
-        free(cmd_str);
     }
 
     return msg_id;
