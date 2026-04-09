@@ -293,6 +293,7 @@ void gree_ac_ir_tranx(struct ac_dev *ac)
     ir_io_init(gac->pin);
     gac->tx.frame.gif = GREE_FRAME0(gac->ac.cfg.open, gac->ac.cfg.temp);
     gac->tx.frame.gif.sleep_en = gac->ac.cfg.sleep;
+    gac->tx.frame.gif.swi = gac->ac.cfg.open;
     if (gac->ac.cfg.open) {
         gac->tx.frame.gif.check = gac->ac.cfg.temp+7;
     } else {
@@ -305,6 +306,7 @@ void gree_ac_ir_tranx(struct ac_dev *ac)
 
     gac->tx.frame.gif = GREE_FRAME1(gac->ac.cfg.open, gac->ac.cfg.temp);
     gac->tx.frame.gif.sleep_en = gac->ac.cfg.sleep;
+    gac->tx.frame.gif.swi = gac->ac.cfg.open;
     if (gac->ac.cfg.open) {
         gac->tx.frame.gif.check = gac->ac.cfg.temp+3;
     } else {
